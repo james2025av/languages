@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>한밤중의 온기（深夜的餘溫）｜韓文互動故事閱讀器</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans KR & Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            kr: ['"Noto Sans KR"', 'sans-serif'],
+            tc: ['"Noto Sans TC"', 'sans-serif'],
+          },
+          colors: {
+            night: {
+              950: '#0b0d13',
+              900: '#12151e',
+              800: '#1a1f2c',
+              700: '#252c3d',
+            },
+            amberwarm: {
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+            },
+            rosegold: {
+              300: '#fda4af',
+              400: '#fb7185',
+              500: '#e11d48',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0b0d13;
+      color: #f1f5f9;
+      font-family: 'Noto Sans TC', 'Noto Sans KR', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* 細雨背景畫布 */
+    #rain-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.45;
+    }
+
+    /* 溫暖微光暈影 */
+    .ambient-glow {
+      position: fixed;
+      width: 55vw;
+      height: 55vw;
+      max-width: 650px;
+      max-height: 650px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.08) 0%, rgba(251, 113, 133, 0.04) 45%, transparent 70%);
+      top: -10%;
+      right: -10%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-bottom {
+      position: fixed;
+      width: 50vw;
+      height: 50vw;
+      max-width: 600px;
+      max-height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(225, 29, 72, 0.06) 0%, rgba(245, 158, 11, 0.03) 50%, transparent 70%);
+      bottom: -15%;
+      left: -10%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 故事內可點擊重點詞彙樣式 */
+    .vocab-highlight {
+      border-bottom: 1.5px dashed rgba(251, 191, 36, 0.65);
+      color: #fde68a;
+      cursor: pointer;
+      padding: 0 2px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .vocab-highlight:hover,
+    .vocab-highlight.active {
+      background-color: rgba(251, 191, 36, 0.2);
+      color: #fef3c7;
+      border-bottom-style: solid;
+    }
+
+    /* 故事內可點擊文法結構樣式 */
+    .grammar-highlight {
+      border-bottom: 1.5px dotted rgba(251, 113, 133, 0.75);
+      color: #fecdd3;
+      cursor: pointer;
+      padding: 0 3px;
+      border-radius: 4px;
+      background-color: rgba(251, 113, 133, 0.06);
+      transition: all 0.2s ease;
+    }
+
+    .grammar-highlight:hover,
+    .grammar-highlight.active {
+      background-color: rgba(251, 113, 133, 0.24);
+      color: #ffe4e6;
+      border-bottom-style: solid;
+    }
+
+    /* 正在朗讀的段落外框發光 */
+    .paragraph-speaking {
+      border-color: rgba(251, 191, 36, 0.55) !important;
+      box-shadow: 0 0 25px rgba(251, 191, 36, 0.12);
+      background-color: rgba(30, 36, 51, 0.85) !important;
+    }
+
+    /* 自訂捲軸 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0d13;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2b3346;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-amber-400/30 selection:text-amber-200">
+  <!-- 背景雨滴與微光效果 -->
+  <canvas id="rain-canvas"></canvas>
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow-bottom"></div>
+
+  <!-- 提示訊息框（取代 alert） -->
+  <div id="toast-box" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-300">
+    <div id="toast-message" class="bg-night-800/95 border border-amber-400/40 text-amber-100 px-4 py-2.5 rounded-full text-sm shadow-xl backdrop-blur-md"></div>
+  </div>
+
+  <!-- 主容器 -->
+  <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    
+    <!-- 頂部標題區 -->
+    <header class="text-center mb-8 sm:mb-10">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/25 text-amber-300 text-xs sm:text-sm mb-4">
+        <span>🌧️ 深夜雨夜情境閱讀</span>
+        <span class="text-slate-500">•</span>
+        <span>韓文沉浸式學習</span>
+      </div>
+      <h1 class="font-kr text-3xl sm:text-4xl font-bold tracking-wide text-amber-100 mb-2">
+        한밤중의 온기
+      </h1>
+      <p class="text-rose-200/80 text-base sm:text-lg font-light tracking-widest">
+        深夜的餘溫
+      </p>
+      <p class="text-slate-400 text-xs sm:text-sm mt-3 max-w-lg mx-auto leading-relaxed">
+        點擊文中<span class="text-amber-300 border-b border-dashed border-amber-400/70 mx-1">金色詞彙</span>或<span class="text-rose-300 border-b border-dotted border-rose-400/70 mx-1">玫瑰色文法</span>，即可查看口語連音與深度解析，並可開啟朗讀練習語調。
+      </p>
+    </header>
+
+    <!-- 互動控制列（固定於上方方便操作） -->
+    <section aria-label="閱讀與朗讀控制列" class="sticky top-3 z-30 mb-8 bg-night-900/85 backdrop-blur-md border border-slate-700/60 rounded-2xl p-3 sm:p-4 shadow-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        
+        <!-- 顯示切換按鈕群 -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="toggle-translation" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all bg-amber-400/20 text-amber-200 border border-amber-400/40 hover:bg-amber-400/30">
+            <span id="icon-translation">👁️</span>
+            <span>繁體中文翻譯</span>
+          </button>
+
+          <button id="toggle-phonetic" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all bg-rose-400/20 text-rose-200 border border-rose-400/40 hover:bg-rose-400/30">
+            <span id="icon-phonetic">🗣️</span>
+            <span>口語連音提示</span>
+          </button>
+        </div>
+
+        <!-- 全文朗讀與語速調整 -->
+        <div class="flex items-center gap-2 ml-auto sm:ml-0">
+          <div class="flex items-center bg-night-950/80 border border-slate-700/70 rounded-xl p-1 text-xs">
+            <button id="speed-slow" type="button" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-colors">
+              0.8x
+            </button>
+            <button id="speed-normal" type="button" class="px-2.5 py-1 rounded-lg bg-amber-400/25 text-amber-200 font-medium transition-colors">
+              1.0x
+            </button>
+          </div>
+
+          <button id="read-all-btn" type="button" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-gradient-to-r from-amber-500/80 to-rose-500/80 hover:from-amber-500 hover:to-rose-500 text-white shadow-lg shadow-rose-950/40 transition-all">
+            <span id="read-all-icon">▶️</span>
+            <span id="read-all-text">朗讀全文</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 故事段落閱讀區 -->
+    <main id="story-container" class="space-y-6 mb-12">
+      <!-- 段落由 JavaScript 動態渲染 -->
+    </main>
+
+    <!-- 互動詞彙與文法學習區（底部切換頁籤） -->
+    <section id="learning-section" class="bg-night-900/90 border border-slate-700/60 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-md">
+      <!-- 頁籤切換列 -->
+      <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4 mb-6">
+        <button id="tab-vocab" type="button" class="px-4 py-2 rounded-xl text-sm font-medium bg-amber-400/20 text-amber-200 border border-amber-400/40 transition-all">
+          ✨ 重點單字與連音解析
+        </button>
+        <button id="tab-grammar" type="button" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 border border-transparent transition-all">
+          📖 文法深度解析（5 大核心句型）
+        </button>
+      </div>
+
+      <!-- 單字卡片面板 -->
+      <div id="panel-vocab">
+        <p class="text-xs sm:text-sm text-slate-400 mb-4">
+          點擊下方任一張單字卡（或直接點擊故事中的金色虛線詞彙），即可聆聽單字發音並查看音變規則：
+        </p>
+        <div id="vocab-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <!-- 單字卡由 JavaScript 動態渲染 -->
+        </div>
+      </div>
+
+      <!-- 文法深度解析面板（預設隱藏，由 JS 動態渲染 5 大文法卡片） -->
+      <div id="panel-grammar" class="hidden">
+        <p class="text-xs sm:text-sm text-slate-400 mb-4">
+          點擊故事中的<span class="text-rose-300 mx-1">玫瑰色文法標記</span>或下方卡片內的「聆聽例句」，即可對照故事原句掌握韓文結構：
+        </p>
+        <div id="grammar-grid" class="space-y-4">
+          <!-- 文法卡片由 JavaScript 動態渲染 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 頁尾 -->
+    <footer class="text-center text-slate-500 text-xs mt-10 pb-6">
+      韓文情境閱讀練習 • 點擊任意段落喇叭圖示可單句反覆聆聽
+    </footer>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. 故事資料與詞彙資料庫
+    // ==========================================
+    const storyParagraphs = [
+      {
+        id: 1,
+        korean: "비가 조용히 내리는 금요일 밤이었어요. 민수와 지은은 오랫동안 기다려 온 주말을 함께 보내고 있었어요. 거실에는 은은한 조명만 켜져 있었고, 두 사람은 소파에 나란히 앉아 와인을 마셨어요.",
+        phonetic: "비가 조용히 내리는 그묘일 바미어써요. 민수와 지으는 오랫동안 기다려 온 주마를 함께 보내고 이써써요. 거시레는 [으는한 조명]만 켜져 이써꼬, 두 사라믄 소파에 나란히 안자 와이늘 마셔써요.",
+        translation: "那是一個安靜下著雨的週五夜晚。民秀和智恩正在共度期待已久的週末。客廳裡只亮著微弱的燈光，兩人並肩坐在沙發上喝著紅酒。"
+      },
+      {
+        id: 2,
+        korean: "민수가 지은의 손을 부드럽게 잡으며 말했어요. \"오늘따라 네가 정말 아름다워 보여.\"",
+        phonetic: "민수가 지으늬 소늘 부드럽께 자브며 마래써요. \"오늘따라 네가 정말 아름다워 보여.\"",
+        translation: "民秀輕柔地握住智恩的手說：「今天你看起來特別美。」"
+      },
+      {
+        id: 3,
+        korean: "지은은 수줍게 웃으며 민수의 어깨에 기댔어요. 두 사람의 시선이 마주쳤고, 숨소리가 점점 가까워졌어요. 민수가 조심스럽게 지은의 머리카락을 넘겨주며 입을 맞췄어요. 처음에는 부드럽고 천천히, 곧이어 서로의 마음을 확인하듯 깊고 뜨겁게 키스가 이어졌어요.",
+        phonetic: "지으는 수줍께 우스며 민수의 어깨에 기대써요. 두 사라믜 [시서니 마주처꼬], 숨소리가 점점 가까워져써요. 민수가 조심스럽께 지으늬 머리카라글 넘겨주며 [이블 마춰써요]. 처으메는 부드럽꼬 천천히, 고디어 서로의 마으믈 화긴하듯 깊꼬 뜨겁께 키스가 이어져써요.",
+        translation: "智恩害羞地笑了笑，靠在民秀的肩膀上。兩人的視線交會，呼吸聲也漸漸靠近。民秀小心翼翼地撥開智恩的頭髮，吻了上去。一開始是溫柔而緩慢的，緊接著彷彿在確認彼此的心意般，親吻變得深沉而炙熱。"
+      },
+      {
+        id: 4,
+        korean: "두 사람은 자연스럽게 침실로 향했어요. 어둠 속에서 서로의 체온이 맞닿았고, 거친 숨결과 함께 밤이 깊어 갔어요. 서두르지 않고 서로의 몸과 마음을 어루만지며, 두 사람은 온전히 하나가 되는 시간을 보냈어요. 빗소리가 창문을 두드리는 동안, 방 안에는 오직 두 사람의 따뜻한 온기만이 가득했어요.",
+        phonetic: "두 사라믄 자연스럽께 침실로 향했써요. 어둠 소게서 서로의 [체오니 마따아꼬], 거친 숨결과 함께 바미 기퍼 가써요. 서두르지 안코 서로의 몸과 마으믈 어루만지며, 두 사라믄 [온전히 하나가 되는] 시가늘 보내써요. 빋쏘리가 창무늘 두드리는 동안, 방 아네는 오직 두 사라믜 따뜻한 [온기]마니 가드캐써요.",
+        translation: "兩人自然地走向臥室。在黑暗中彼此的體溫相互交融，伴隨著急促的呼吸聲，夜色漸深。沒有絲毫急躁，兩人輕撫著彼此的身體與心靈，度過了完全融為一體的時光。當雨聲敲打著窗戶時，房間裡只充滿了兩人溫暖的餘溫。"
+      }
+    ];
+
+    const vocabList = [
+      {
+        id: "v1",
+        matchText: "은은한 조명",
+        term: "은은한 조명",
+        pronunciation: "[으는한 조명]",
+        meaning: "微弱柔和的燈光",
+        rule: "定語詞尾 -ㄴ ＋ 連音化",
+        detail: "形容詞「은은하다（淡淡的、幽微的）」去掉 다 加上定語詞尾 -ㄴ 修飾名詞「조명（照明）」。은 的收音 ㄴ 連音到後面唸成 [으는한]。"
+      },
+      {
+        id: "v2",
+        matchText: "시선이 마주쳤고",
+        term: "시선이 마주치다",
+        pronunciation: "[시서니 마주치다]",
+        meaning: "視線交會",
+        rule: "連音化（연음）",
+        detail: "名詞「시선（視線）」的底部收音 ㄴ 直接連到主格助詞 이，實際口語發音為 [시서니]。"
+      },
+      {
+        id: "v3",
+        matchText: "입을 맞췄어요",
+        term: "입을 맞추다",
+        pronunciation: "[이블 마추다]",
+        meaning: "接吻、親吻",
+        rule: "連音化（연음）",
+        detail: "字面意思是「把嘴唇對上」，是韓文中較為浪漫、文雅的接吻說法。「입을」的收音 ㅂ 連音唸成 [이블]。"
+      },
+      {
+        id: "v4",
+        matchText: "체온이 맞닿았고",
+        term: "체온이 맞닿다",
+        pronunciation: "[체오니 마따타]",
+        meaning: "體溫相互接觸",
+        rule: "連音化 ＋ 緊音化／送氣化",
+        detail: "「체온이」連音唸成 [체오니]；「맞닿다」中 맞 的收音 ㅈ 遇到 닿 的 ㄷ 會產生緊音化變成 [따]，而 ㅎ 遇到 ㄷ 則送氣唸成 [타]。"
+      },
+      {
+        id: "v5",
+        matchText: "온전히 하나가 되는",
+        term: "온전히 하나가 되다",
+        pronunciation: "[온전히 하나가 되다]",
+        meaning: "完全融為一體",
+        rule: "副詞修飾 ＋ 變化句型",
+        detail: "副詞「온전히（完全地、完整地）」搭配「하나가 되다（成為一體）」，在故事中加上定語詞尾 -는 修飾後方的「시간（時光）」。"
+      },
+      {
+        id: "v6",
+        matchText: "온기",
+        term: "온기",
+        pronunciation: "[온기]",
+        meaning: "餘溫、溫暖的氣息",
+        rule: "漢字詞（溫氣）",
+        detail: "由漢字「溫（온）」與「氣（기）」組成，常用來形容人體、懷抱或空間裡留下的溫暖氣息。"
+      }
+    ];
+
+    const grammarList = [
+      {
+        id: "g1",
+        badge: "文法 01",
+        pattern: "-았/었어요",
+        title: "禮貌體過去式敘事結尾",
+        formula: "動詞／形容詞詞幹 ＋ -았어요 / -었어요 / -했어요",
+        matchTexts: ["보내고 있었어요", "가득했어요"],
+        exampleKr: "방 안에는 오직 두 사람의 따뜻한 온기만이 가득했어요.",
+        examplePron: "[방 아네는 오직 두 사라믜 따뜻한 온기마니 가드캐써요]",
+        exampleZh: "房間裡只充滿了兩人溫暖的餘溫。",
+        explanation: "當詞幹最後一個母音為「ㅏ / ㅗ」時接 -았어요（例：마시다 → 마셨어요）；其餘母音接 -었어요（例：보내다 → 보냈어요）；以「하다」結尾則一律變為 -했어요（例：가득하다 → 가득했어요）。整篇故事統一採用禮貌體過去式，营造出彷彿在深夜裡聽朋友輕聲細語說故事的溫柔敘事感。"
+      },
+      {
+        id: "g2",
+        badge: "文法 02",
+        pattern: "-ㄴ/은 vs -는",
+        title: "定語詞尾修飾名詞（形容詞 vs 動詞）",
+        formula: "形容詞詞幹 ＋ -ㄴ/은 ＋ 名詞 ｜ 動詞詞幹 ＋ -는 ＋ 名詞",
+        matchTexts: ["비가 조용히 내리는", "하나가 되는 시간"],
+        exampleKr: "비가 조용히 내리는 금요일 밤이었어요.",
+        examplePron: "[비가 조용히 내리는 그묘일 바미어써요]",
+        exampleZh: "那是一個安靜下著雨的週五夜晚。",
+        explanation: "韓文用形容詞或動詞修飾後方名詞（相當於中文「……的」）時詞尾不同：形容詞表達狀態，無收音加 -ㄴ、有收音加 -은（如 은은한 조명 微弱的燈光）；動詞表達現在或進行中的動作，一律加 -는（如 내리는 밤 下著雨的夜晚、하나가 되는 시간 融為一體的時光）。"
+      },
+      {
+        id: "g3",
+        badge: "文法 03",
+        pattern: "-(으)며",
+        title: "動作同時進行連接詞尾",
+        formula: "動詞詞幹（無收音／ㄹ收音）＋ -며 ｜ 動詞詞幹（有收音）＋ -으며",
+        matchTexts: ["부드럽게 잡으며", "머리카락을 넘겨주며"],
+        exampleKr: "민수가 지은의 손을 부드럽게 잡으며 말했어요.",
+        examplePron: "[민수가 지으늬 소늘 부드럽께 자브며 마래써요]",
+        exampleZh: "民秀輕柔地握住智恩的手並說道。",
+        explanation: "用來連接同一個主語「同時進行的兩個動作」，相當於中文的「一邊……一邊……／……並同時……」。詞幹有收音時接 -으며（잡다 → 잡으며，連音唸成 [자브며]）；無收音時直接接 -며（넘겨주다 → 넘겨주며）。"
+      },
+      {
+        id: "g4",
+        badge: "文法 04",
+        pattern: "-는 동안 & -아/어 가다",
+        title: "背景時間持續與狀態漸進",
+        formula: "動詞詞幹 ＋ -는 동안（在……期間）｜ 動詞／形容詞詞幹 ＋ -아/어 가다（漸漸……）",
+        matchTexts: ["밤이 깊어 갔어요", "창문을 두드리는 동안"],
+        exampleKr: "빗소리가 창문을 두드리는 동안, 밤이 깊어 갔어요.",
+        examplePron: "[빋쏘리가 창무늘 두드리는 동안, 바미 기퍼 가써요]",
+        exampleZh: "當雨聲敲打著窗戶的期間，夜色漸深。",
+        explanation: "「-는 동안」表示某個動作持續進行的時間背景（當……的時候）；而「-아/어 가다」接在動詞或形容詞後，表達狀態隨著時間推移「逐漸發展、漸漸加深」（깊다 深 → 깊어 가다 漸漸變深）。"
+      },
+      {
+        id: "g5",
+        badge: "文法 05",
+        pattern: "-지 않고",
+        title: "否定／方式副詞連接詞尾",
+        formula: "動詞／形容詞詞幹 ＋ -지 않고 ＋ 後續動作",
+        matchTexts: ["서두르지 않고"],
+        exampleKr: "서두르지 않고 서로의 몸과 마음을 어루만지며 시간을 보냈어요.",
+        examplePron: "[서두르지 안코 서로의 몸과 마으믈 어루만지며 시가늘 보내써요]",
+        exampleZh: "沒有絲毫急躁地，輕撫著彼此的身體與心靈度過了時光。",
+        explanation: "延續長否定結構「-지 않다」，將句尾換成連接詞尾 -고 變成「-지 않고」，意思為「沒有做某事而……／不……地」，用來修飾後方動作的進行方式（서두르다 急躁 → 서두르지 않고 不急躁地）。注意 발음 時 않고 的 ㅎ 與 ㄱ 結合送氣唸成 [안코]。"
+      }
+    ];
+
+    // ==========================================
+    // 2. 狀態管理與 UI 參考
+    // ==========================================
+    let showTranslation = true;
+    let showPhonetic = true;
+    let speechRate = 1.0;
+    let isReadingAll = false;
+    let currentSpeakingId = null;
+    let activeVocabId = null;
+    let activeGrammarId = null;
+
+    const storyContainer = document.getElementById("story-container");
+    const vocabGrid = document.getElementById("vocab-grid");
+    const grammarGrid = document.getElementById("grammar-grid");
+    const toastBox = document.getElementById("toast-box");
+    const toastMessage = document.getElementById("toast-message");
+    let toastTimer = null;
+
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      toastBox.classList.remove("opacity-0");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastBox.classList.add("opacity-0");
+      }, 2600);
+    }
+
+    // ==========================================
+    // 3. 渲染故事段落與高亮詞彙／文法
+    // ==========================================
+    function highlightAnnotationsInText(text) {
+      let result = text;
+
+      // 先標記重點詞彙
+      vocabList.forEach(item => {
+        const spanTag = `<span class="vocab-highlight" data-vocab-id="${item.id}" title="單字解析：${item.term}">${item.matchText}</span>`;
+        result = result.replace(item.matchText, spanTag);
+      });
+
+      // 再標記文法重點結構（避免與單字片段重疊）
+      grammarList.forEach(gItem => {
+        gItem.matchTexts.forEach(phrase => {
+          const gTag = `<span class="grammar-highlight" data-grammar-id="${gItem.id}" title="${gItem.badge}：${gItem.pattern}">${phrase}</span>`;
+          result = result.replace(phrase, gTag);
+        });
+      });
+
+      return result;
+    }
+
+    function renderStory() {
+      storyContainer.innerHTML = "";
+      storyParagraphs.forEach((p, idx) => {
+        const card = document.createElement("article");
+        card.id = `para-card-${p.id}`;
+        card.className = "bg-night-900/75 border border-slate-800/90 rounded-3xl p-5 sm:p-7 transition-all duration-300 backdrop-blur-sm shadow-xl";
+
+        const highlightedKorean = highlightAnnotationsInText(p.korean);
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-3 mb-3.5">
+            <span class="text-xs font-medium tracking-wider uppercase text-amber-400/75 bg-amber-400/10 px-2.5 py-1 rounded-lg">
+              段落 0${idx + 1}
+            </span>
+            <button
+              type="button"
+              class="speak-para-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-night-800 hover:bg-amber-400/20 text-slate-300 hover:text-amber-200 border border-slate-700/70 hover:border-amber-400/40 transition-all"
+              data-para-id="${p.id}"
+            >
+              <span>🔊</span>
+              <span>朗讀本段</span>
+            </button>
+          </div>
+
+          <!-- 韓文原文 -->
+          <p class="font-kr text-lg sm:text-xl leading-loose text-slate-100 font-normal tracking-wide mb-3">
+            ${highlightedKorean}
+          </p>
+
+          <!-- 口語連音發音提示 -->
+          <div class="phonetic-block ${showPhonetic ? "" : "hidden"} mt-3 pt-3 border-t border-slate-800/80">
+            <div class="flex items-start gap-2 text-xs sm:text-sm text-rose-200/85 font-kr leading-relaxed">
+              <span class="shrink-0 text-[11px] bg-rose-400/15 text-rose-300 border border-rose-400/30 px-2 py-0.5 rounded-md mt-0.5">連音</span>
+              <span>${p.phonetic}</span>
+            </div>
+          </div>
+
+          <!-- 繁體中文翻譯 -->
+          <div class="translation-block ${showTranslation ? "" : "hidden"} mt-3 pt-3 border-t border-slate-800/80">
+            <p class="text-sm sm:text-base text-slate-300/90 leading-relaxed font-light">
+              ${p.translation}
+            </p>
+          </div>
+        `;
+
+        storyContainer.appendChild(card);
+      });
+
+      // 綁定單段朗讀按鈕
+      document.querySelectorAll(".speak-para-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = Number(btn.getAttribute("data-para-id"));
+          const target = storyParagraphs.find(item => item.id === id);
+          if (target) {
+            stopSpeech();
+            speakText(target.korean, id);
+          }
+        });
+      });
+
+      // 綁定文內高亮單字點擊事件
+      document.querySelectorAll(".vocab-highlight").forEach(span => {
+        span.addEventListener("click", () => {
+          const vocabId = span.getAttribute("data-vocab-id");
+          focusVocabCard(vocabId);
+        });
+      });
+
+      // 綁定文內高亮文法點擊事件
+      document.querySelectorAll(".grammar-highlight").forEach(span => {
+        span.addEventListener("click", () => {
+          const grammarId = span.getAttribute("data-grammar-id");
+          focusGrammarCard(grammarId);
+        });
+      });
+    }
+
+    // ==========================================
+    // 4. 渲染單字卡、文法卡與互動聚焦
+    // ==========================================
+    function renderVocabCards() {
+      vocabGrid.innerHTML = "";
+      vocabList.forEach(item => {
+        const card = document.createElement("div");
+        card.id = `vocab-card-${item.id}`;
+        card.className = "vocab-card-item cursor-pointer bg-night-800/75 hover:bg-night-800 border border-slate-700/60 rounded-2xl p-4 transition-all duration-200";
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2 mb-1.5">
+            <div>
+              <h3 class="font-kr text-base sm:text-lg font-bold text-amber-200">${item.term}</h3>
+              <p class="font-kr text-xs text-rose-300 mt-0.5">${item.pronunciation}</p>
+            </div>
+            <button type="button" class="vocab-audio-btn p-2 rounded-xl bg-night-950/80 hover:bg-amber-400/20 text-amber-300 border border-slate-700/60 text-xs transition-colors" title="聆聽單字發音">
+              🔊
+            </button>
+          </div>
+          <p class="text-sm font-medium text-slate-100 mt-2">${item.meaning}</p>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-700/50">
+            <span class="inline-block text-[11px] text-amber-300/90 bg-amber-400/10 px-2 py-0.5 rounded mb-1">${item.rule}</span>
+            <p class="text-xs text-slate-400 leading-relaxed">${item.detail}</p>
+          </div>
+        `;
+
+        // 點擊卡片發音並高亮
+        card.addEventListener("click", () => {
+          highlightActiveVocab(item.id);
+          stopSpeech();
+          speakText(item.term, null);
+        });
+
+        vocabGrid.appendChild(card);
+      });
+    }
+
+    function highlightActiveVocab(vocabId) {
+      activeVocabId = vocabId;
+      document.querySelectorAll(".vocab-card-item").forEach(c => {
+        c.classList.remove("border-amber-400", "ring-2", "ring-amber-400/30", "bg-night-800");
+        c.classList.add("border-slate-700/60");
+      });
+      document.querySelectorAll(".vocab-highlight").forEach(s => {
+        s.classList.remove("active");
+      });
+
+      const targetCard = document.getElementById(`vocab-card-${vocabId}`);
+      if (targetCard) {
+        targetCard.classList.remove("border-slate-700/60");
+        targetCard.classList.add("border-amber-400", "ring-2", "ring-amber-400/30", "bg-night-800");
+      }
+
+      const targetSpan = document.querySelector(`.vocab-highlight[data-vocab-id="${vocabId}"]`);
+      if (targetSpan) {
+        targetSpan.classList.add("active");
+      }
+    }
+
+    function focusVocabCard(vocabId) {
+      // 切換到單字頁籤
+      switchTab("vocab");
+      highlightActiveVocab(vocabId);
+      const targetCard = document.getElementById(`vocab-card-${vocabId}`);
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      const item = vocabList.find(v => v.id === vocabId);
+      if (item) {
+        stopSpeech();
+        speakText(item.term, null);
+      }
+    }
+
+    function renderGrammarCards() {
+      grammarGrid.innerHTML = "";
+      grammarList.forEach(item => {
+        const card = document.createElement("div");
+        card.id = `grammar-card-${item.id}`;
+        card.className = "grammar-card-item bg-night-800/75 border border-slate-700/60 rounded-2xl p-4 sm:p-5 transition-all duration-200";
+        card.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs font-bold tracking-wide px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-400/30">
+                ${item.badge}
+              </span>
+              <span class="font-kr text-base sm:text-lg font-bold text-amber-200">
+                ${item.pattern}
+              </span>
+              <span class="text-sm sm:text-base font-medium text-slate-100">
+                ${item.title}
+              </span>
+            </div>
+            <button
+              type="button"
+              class="grammar-audio-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-night-950/90 hover:bg-rose-400/20 text-rose-200 border border-slate-700/70 hover:border-rose-400/40 transition-all"
+              data-grammar-id="${item.id}"
+            >
+              <span>🔊</span>
+              <span>聆聽例句</span>
+            </button>
+          </div>
+
+          <!-- 句型公式 -->
+          <div class="text-xs text-amber-300/90 bg-night-950/75 border border-slate-800 rounded-xl px-3 py-2 mb-3 font-kr">
+            <span class="text-slate-400 font-tc mr-1.5">句型公式：</span>${item.formula}
+          </div>
+
+          <!-- 故事原句範例 -->
+          <div class="bg-night-900/90 border-l-2 border-rose-400/70 rounded-r-xl p-3 mb-3">
+            <p class="font-kr text-sm sm:text-base text-slate-100 leading-relaxed">${item.exampleKr}</p>
+            <p class="font-kr text-xs text-rose-300/90 mt-1">${item.examplePron}</p>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1">${item.exampleZh}</p>
+          </div>
+
+          <!-- 詳細文法解析 -->
+          <p class="text-xs sm:text-sm text-slate-300/90 leading-relaxed">
+            ${item.explanation}
+          </p>
+        `;
+
+        const audioBtn = card.querySelector(".grammar-audio-btn");
+        audioBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          highlightActiveGrammar(item.id);
+          stopSpeech();
+          speakText(item.exampleKr, null);
+        });
+
+        card.addEventListener("click", () => {
+          highlightActiveGrammar(item.id);
+        });
+
+        grammarGrid.appendChild(card);
+      });
+    }
+
+    function highlightActiveGrammar(grammarId) {
+      activeGrammarId = grammarId;
+      document.querySelectorAll(".grammar-card-item").forEach(c => {
+        c.classList.remove("border-rose-400", "ring-2", "ring-rose-400/30", "bg-night-800");
+        c.classList.add("border-slate-700/60");
+      });
+      document.querySelectorAll(".grammar-highlight").forEach(s => {
+        s.classList.remove("active");
+      });
+
+      const targetCard = document.getElementById(`grammar-card-${grammarId}`);
+      if (targetCard) {
+        targetCard.classList.remove("border-slate-700/60");
+        targetCard.classList.add("border-rose-400", "ring-2", "ring-rose-400/30", "bg-night-800");
+      }
+
+      document.querySelectorAll(`.grammar-highlight[data-grammar-id="${grammarId}"]`).forEach(span => {
+        span.classList.add("active");
+      });
+    }
+
+    function focusGrammarCard(grammarId) {
+      switchTab("grammar");
+      highlightActiveGrammar(grammarId);
+      const targetCard = document.getElementById(`grammar-card-${grammarId}`);
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      const item = grammarList.find(g => g.id === grammarId);
+      if (item) {
+        stopSpeech();
+        speakText(item.exampleKr, null);
+      }
+    }
+
+    // ==========================================
+    // 5. Web Speech API 韓語語音朗讀功能
+    // ==========================================
+    function clearSpeakingVisuals() {
+      document.querySelectorAll("article").forEach(el => {
+        el.classList.remove("paragraph-speaking");
+      });
+      currentSpeakingId = null;
+    }
+
+    function stopSpeech() {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      isReadingAll = false;
+      updateReadAllButton(false);
+      clearSpeakingVisuals();
+    }
+
+    function updateReadAllButton(playing) {
+      const icon = document.getElementById("read-all-icon");
+      const text = document.getElementById("read-all-text");
+      if (playing) {
+        icon.textContent = "⏹️";
+        text.textContent = "停止朗讀";
+      } else {
+        icon.textContent = "▶️";
+        text.textContent = "朗讀全文";
+      }
+    }
+
+    function speakText(text, paraId = null, onEndCallback = null) {
+      if (!("speechSynthesis" in window)) {
+        showToast("您的瀏覽器不支援語音朗讀功能，建議使用 Chrome 或 Safari。");
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ko-KR";
+      utterance.rate = speechRate;
+      utterance.pitch = 1.0;
+
+      // 嘗試挑選較自然的韓語語音
+      const voices = window.speechSynthesis.getVoices();
+      const koVoice = voices.find(v => v.lang.includes("ko") && (v.name.includes("Google") || v.name.includes("Yuna") || v.name.includes("Natural")))
+                   || voices.find(v => v.lang.includes("ko"));
+      if (koVoice) {
+        utterance.voice = koVoice;
+      }
+
+      utterance.onstart = () => {
+        clearSpeakingVisuals();
+        if (paraId) {
+          currentSpeakingId = paraId;
+          const card = document.getElementById(`para-card-${paraId}`);
+          if (card) {
+            card.classList.add("paragraph-speaking");
+          }
+        }
+      };
+
+      utterance.onend = () => {
+        clearSpeakingVisuals();
+        if (onEndCallback) onEndCallback();
+      };
+
+      utterance.onerror = () => {
+        clearSpeakingVisuals();
+        if (isReadingAll) {
+          isReadingAll = false;
+          updateReadAllButton(false);
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function readFullStory(index = 0) {
+      if (index >= storyParagraphs.length) {
+        isReadingAll = false;
+        updateReadAllButton(false);
+        clearSpeakingVisuals();
+        showToast("全文朗讀完畢 ✨");
+        return;
+      }
+
+      isReadingAll = true;
+      updateReadAllButton(true);
+      const p = storyParagraphs[index];
+      const card = document.getElementById(`para-card-${p.id}`);
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      speakText(p.korean, p.id, () => {
+        if (isReadingAll) {
+          setTimeout(() => readFullStory(index + 1), 450);
+        }
+      });
+    }
+
+    // ==========================================
+    // 6. 控制列與頁籤事件監聽
+    // ==========================================
+    const toggleTranslationBtn = document.getElementById("toggle-translation");
+    const togglePhoneticBtn = document.getElementById("toggle-phonetic");
+    const speedSlowBtn = document.getElementById("speed-slow");
+    const speedNormalBtn = document.getElementById("speed-normal");
+    const readAllBtn = document.getElementById("read-all-btn");
+
+    toggleTranslationBtn.addEventListener("click", () => {
+      showTranslation = !showTranslation;
+      document.querySelectorAll(".translation-block").forEach(el => {
+        el.classList.toggle("hidden", !showTranslation);
+      });
+      toggleTranslationBtn.classList.toggle("opacity-50", !showTranslation);
+      showToast(showTranslation ? "已顯示繁體中文翻譯" : "已隱藏繁體中文翻譯");
+    });
+
+    togglePhoneticBtn.addEventListener("click", () => {
+      showPhonetic = !showPhonetic;
+      document.querySelectorAll(".phonetic-block").forEach(el => {
+        el.classList.toggle("hidden", !showPhonetic);
+      });
+      togglePhoneticBtn.classList.toggle("opacity-50", !showPhonetic);
+      showToast(showPhonetic ? "已顯示口語連音提示" : "已隱藏口語連音提示");
+    });
+
+    speedSlowBtn.addEventListener("click", () => {
+      speechRate = 0.8;
+      speedSlowBtn.className = "px-2.5 py-1 rounded-lg bg-amber-400/25 text-amber-200 font-medium transition-colors";
+      speedNormalBtn.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-colors";
+      showToast("朗讀語速已調整為 0.8x（慢速清晰）");
+    });
+
+    speedNormalBtn.addEventListener("click", () => {
+      speechRate = 1.0;
+      speedNormalBtn.className = "px-2.5 py-1 rounded-lg bg-amber-400/25 text-amber-200 font-medium transition-colors";
+      speedSlowBtn.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-colors";
+      showToast("朗讀語速已調整為 1.0x（正常語速）");
+    });
+
+    readAllBtn.addEventListener("click", () => {
+      if (isReadingAll) {
+        stopSpeech();
+        showToast("已停止朗讀");
+      } else {
+        stopSpeech();
+        readFullStory(0);
+      }
+    });
+
+    // 底部頁籤切換
+    const tabVocab = document.getElementById("tab-vocab");
+    const tabGrammar = document.getElementById("tab-grammar");
+    const panelVocab = document.getElementById("panel-vocab");
+    const panelGrammar = document.getElementById("panel-grammar");
+
+    function switchTab(tab) {
+      if (tab === "vocab") {
+        panelVocab.classList.remove("hidden");
+        panelGrammar.classList.add("hidden");
+        tabVocab.className = "px-4 py-2 rounded-xl text-sm font-medium bg-amber-400/20 text-amber-200 border border-amber-400/40 transition-all";
+        tabGrammar.className = "px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 border border-transparent transition-all";
+      } else {
+        panelGrammar.classList.remove("hidden");
+        panelVocab.classList.add("hidden");
+        tabGrammar.className = "px-4 py-2 rounded-xl text-sm font-medium bg-rose-400/20 text-rose-200 border border-rose-400/40 transition-all";
+        tabVocab.className = "px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 border border-transparent transition-all";
+      }
+    }
+
+    tabVocab.addEventListener("click", () => switchTab("vocab"));
+    tabGrammar.addEventListener("click", () => switchTab("grammar"));
+
+    // ==========================================
+    // 7. 深夜細雨背景動畫（Canvas）
+    // ==========================================
+    function initRainEffect() {
+      const canvas = document.getElementById("rain-canvas");
+      const ctx = canvas.getContext("2d");
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      const dropCount = Math.min(85, Math.floor(width / 16));
+      const drops = Array.from({ length: dropCount }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        len: 12 + Math.random() * 18,
+        speed: 2.5 + Math.random() * 3.5,
+        opacity: 0.12 + Math.random() * 0.25
+      }));
+
+      window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      function animateRain() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+
+        drops.forEach(d => {
+          ctx.strokeStyle = `rgba(203, 213, 225, ${d.opacity})`;
+          ctx.beginPath();
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(d.x - 1.5, d.y + d.len);
+          ctx.stroke();
+
+          d.y += d.speed;
+          d.x -= 0.4;
+
+          if (d.y > height) {
+            d.y = -d.len;
+            d.x = Math.random() * width;
+          }
+          if (d.x < 0) {
+            d.x = width;
+          }
+        });
+
+        requestAnimationFrame(animateRain);
+      }
+
+      animateRain();
+    }
+
+    // 確保語音列表預載
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
+    // 初始化頁面
+    window.addEventListener("DOMContentLoaded", () => {
+      renderStory();
+      renderVocabCards();
+      renderGrammarCards();
+      initRainEffect();
+    });
+  </script>
+</body>
+</html>
