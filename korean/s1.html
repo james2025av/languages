@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>한밤중의 온기（深夜的餘溫）</title>
+  <style>
+    :root {
+      --bg: #121418;
+      --surface: #1a1d24;
+      --surface-2: #222732;
+      --border: #2e3442;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --accent: #f59e0b;
+      --accent-soft: rgba(245, 158, 11, 0.14);
+      --ok: #34d399;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      padding: 24px 16px 64px;
+    }
+    .container { max-width: 820px; margin: 0 auto; }
+    .story-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    h1.title-kr { font-size: 1.75rem; font-weight: 800; margin-bottom: 4px; }
+    .title-zh { font-size: 1.05rem; color: var(--muted); margin-bottom: 16px; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .btn {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn.active { background: var(--accent); color: #121316; border-color: var(--accent); }
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+    .section-heading { font-size: 1rem; font-weight: 700; color: var(--accent); margin-bottom: 14px; }
+    .line-item {
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      margin-bottom: 10px;
+      background: var(--surface-2);
+      cursor: pointer;
+    }
+    .line-item.playing { border-color: var(--accent); background: var(--accent-soft); }
+    .line-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .kr-text { font-size: 1.15rem; font-weight: 600; color: #ffffff; }
+    .speak-btn {
+      flex-shrink: 0;
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .rom-text { font-size: 0.88rem; color: var(--ok); margin-top: 4px; display: none; }
+    .zh-text { font-size: 0.95rem; color: #d1d5db; margin-top: 4px; }
+    .show-rom .rom-text { display: block; }
+    .hide-zh .zh-text { display: none; }
+    .vocab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .vocab-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+    .vocab-kr { font-size: 1.05rem; font-weight: 700; color: #ffffff; }
+    .vocab-rom { font-size: 0.82rem; color: var(--ok); margin: 2px 0; }
+    .vocab-zh { font-size: 0.9rem; color: #d1d5db; }
+    .note-list { padding-left: 20px; color: #d1d5db; }
+    .note-list li { margin-bottom: 8px; }
+    .hint { font-size: 0.82rem; color: var(--muted); margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="story-header">
+      <div class="badge">KOREAN READING · 01</div>
+      <h1 class="title-kr">한밤중의 온기</h1>
+      <div class="title-zh">深夜的餘溫</div>
+      <div class="toolbar">
+        <button id="toggleRomBtn" class="btn" onclick="toggleRom()">顯示羅馬拼音</button>
+        <button id="toggleZhBtn" class="btn active" onclick="toggleZh()">隱藏中文翻譯</button>
+        <button class="btn" onclick="stopSpeech()">停止朗讀</button>
+      </div>
+      <p class="hint">點擊任一句韓文或「聽發音」即可朗讀（需裝置支援韓文語音 ko-KR）。</p>
+    </header>
+
+    <section class="section-card">
+      <div class="section-heading">📖 故事正文</div>
+      <div id="storyLines" class="hide-zh"></div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-heading">📝 重點詞彙</div>
+      <div class="vocab-grid">
+        <div class="vocab-card"><div class="vocab-kr">한밤중</div><div class="vocab-rom">hanbamjung</div><div class="vocab-zh">深夜、午夜時分</div></div>
+        <div class="vocab-card"><div class="vocab-kr">온기</div><div class="vocab-rom">ongi</div><div class="vocab-zh">餘溫、暖意</div></div>
+        <div class="vocab-card"><div class="vocab-kr">조용하다</div><div class="vocab-rom">joyonghada</div><div class="vocab-zh">安靜的、寂靜的</div></div>
+        <div class="vocab-card"><div class="vocab-kr">따뜻한 차</div><div class="vocab-rom">ttatteuthan cha</div><div class="vocab-zh">溫熱的茶</div></div>
+        <div class="vocab-card"><div class="vocab-kr">남아 있다</div><div class="vocab-rom">nama itda</div><div class="vocab-zh">留存著、殘留著</div></div>
+        <div class="vocab-card"><div class="vocab-kr">마음</div><div class="vocab-rom">maeum</div><div class="vocab-zh">心、心情</div></div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-heading">💡 文法重點</div>
+      <ul class="note-list">
+        <li><strong>形容詞定語形（-(으)ㄴ）</strong>：如 <strong>조용한</strong>（安靜的）、<strong>따뜻한</strong>（溫暖的），用來修飾名詞。</li>
+        <li><strong>狀態持續（-아/어 있다）</strong>：如 <strong>남아 있는</strong>（留存著的），表示狀態持續存在。</li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    const storyData = [
+      { kr: "한밤중, 방 안은 아주 조용했습니다.", rom: "Hanbamjung, bang aneun aju joyonghaetseumnida.", zh: "深夜裡，房間裡非常安靜。" },
+      { kr: "창밖에는 차가운 바람이 불었지만, 책상 위 컵에는 아직 따뜻한 차가 남아 있었습니다.", rom: "Changbakkaeneun chagaun barami bureotjiman, chaeksang wi keobeneun ajik ttatteuthan chaga nama isseotseumnida.", zh: "雖然窗外吹著冷風，但書桌上的杯子裡還留著溫熱的茶。" },
+      { kr: "두 손으로 컵을 감싸 쥐자, 손끝에서부터 작은 온기가 퍼져 나갔습니다.", rom: "Du soneuro keobeul gamssa jwija, sonkkeuteseobuteo jageun ongiga peojyeo nagatseumnida.", zh: "當雙手捧住杯子時，一股微小的暖意從指尖蔓延開來。" },
+      { kr: "오늘 하루의 분주함은 조금씩 가라앉고, 마음도 차분해졌습니다.", rom: "Oneul haruui bunjuhameun jogeumssik garaantgo, maeumdo chabunhaejyeotseumnida.", zh: "今天一天的忙碌漸漸沉澱下來，心情也跟著平靜了。" },
+      { kr: "그 온기는 컵 속에만 머무르지 않고, 내일의 나를 기다리는 조용한 힘이 되었습니다.", rom: "Geu ongineun keop sogeman meomureuji ango, naeirui nareul gidarineun joyonghan himi doeeotseumnida.", zh: "那份餘溫不只停留在杯中，也成了等待明日自己的安靜力量。" }
+    ];
+
+    const container = document.getElementById("storyLines");
+    storyData.forEach((item, idx) => {
+      const div = document.createElement("div");
+      div.className = "line-item";
+      div.onclick = () => speakLine(idx, div);
+      div.innerHTML = `
+        <div class="line-top">
+          <div class="kr-text">${idx + 1}. ${item.kr}</div>
+          <button type="button" class="speak-btn" onclick="event.stopPropagation(); speakLine(${idx}, this.closest('.line-item'))">🔊 聽發音</button>
+        </div>
+        <div class="rom-text">${item.rom}</div>
+        <div class="zh-text">${item.zh}</div>
+      `;
+      container.appendChild(div);
+    });
+
+    function toggleRom() {
+      const btn = document.getElementById("toggleRomBtn");
+      const active = container.classList.toggle("show-rom");
+      btn.classList.toggle("active", active);
+      btn.textContent = active ? "隱藏羅馬拼音" : "顯示羅馬拼音";
+    }
+    function toggleZh() {
+      const btn = document.getElementById("toggleZhBtn");
+      const hidden = container.classList.toggle("hide-zh");
+      btn.classList.toggle("active", hidden);
+      btn.textContent = hidden ? "顯示中文翻譯" : "隱藏中文翻譯";
+    }
+    function clearPlaying() {
+      document.querySelectorAll(".line-item.playing").forEach(el => el.classList.remove("playing"));
+    }
+    function stopSpeech() {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      clearPlaying();
+    }
+    function speakLine(index, el) {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      clearPlaying();
+      const utter = new SpeechSynthesisUtterance(storyData[index].kr);
+      utter.lang = "ko-KR";
+      utter.rate = 0.92;
+      if (el) el.classList.add("playing");
+      utter.onend = clearPlaying;
+      utter.onerror = clearPlaying;
+      window.speechSynthesis.speak(utter);
+    }
+  </script>
+</body>
+</html>
+步驟 4：建立韓文區目錄切換頁（korean/index.html）這個檔案負責在韓文區上方列出課文清單，並預設載入剛才建好的 story-01.html。回到儲存庫主頁，點擊 Add file $\rightarrow$ Create new file。檔名欄位輸入 korean/index.html。貼上以下程式碼，按 Commit changes... $\rightarrow$ Commit changes：HTML<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>韓文學習目錄</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background: #14161b;
+      color: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .catalog-bar {
+      background: #1d2028;
+      border-bottom: 1px solid #2f3441;
+      padding: 12px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .catalog-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .catalog-title { font-size: 0.95rem; font-weight: 700; color: #fbbf24; }
+    .open-direct {
+      font-size: 0.82rem;
+      color: #93c5fd;
+      text-decoration: none;
+      border: 1px solid #374151;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #252934;
+    }
+    .lesson-list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+    .lesson-btn {
+      background: #262a34;
+      color: #d1d5db;
+      border: 1px solid #393f4d;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+    .lesson-btn.active { background: #fbbf24; color: #14161b; border-color: #fbbf24; font-weight: 700; }
+    .reader-frame { flex: 1; width: 100%; border: none; background: #14161b; }
+  </style>
+</head>
+<body>
+  <div class="catalog-bar">
+    <div class="catalog-top">
+      <div class="catalog-title">🇰🇷 韓文課文與筆記目錄</div>
+      <a id="direct-link" class="open-direct" href="story-01.html" target="_blank" rel="noopener">在新視窗開啟此篇 ↗</a>
+    </div>
+    <div class="lesson-list">
+      <button class="lesson-btn active" onclick="selectLesson(this, 'story-01.html')">01. 한밤중의 온기（深夜的餘溫）</button>
+    </div>
+  </div>
+
+  <iframe id="lesson-frame" class="reader-frame" src="story-01.html" title="韓文課文閱讀區"></iframe>
+
+  <script>
+    function selectLesson(btn, fileName) {
+      document.querySelectorAll('.lesson-btn').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('lesson-frame').src = fileName;
+      document.getElementById('direct-link').href = fileName;
+    }
+  </script>
+</body>
+</html>
