@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>韓文實用短句與連音文法大全｜Korean Phrases</title>
+  <style>
+    :root {
+      --bg: #111317;
+      --surface: #191c23;
+      --surface-2: #222631;
+      --border: #2e3443;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --accent: #f59e0b;
+      --accent-soft: rgba(245, 158, 11, 0.14);
+      --pron: #38bdf8;
+      --rom: #34d399;
+      --grammar: #c084fc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Noto Sans KR", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 20px 14px 64px;
+    }
+
+    .container { max-width: 920px; margin: 0 auto; }
+
+    header.page-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+
+    h1 { font-size: 1.55rem; font-weight: 800; margin-bottom: 6px; }
+    .subtitle { font-size: 0.92rem; color: var(--muted); margin-bottom: 14px; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .filter-btn {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 13px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .filter-btn:hover { background: #2c3140; }
+    .filter-btn.active { background: var(--accent); color: #111317; border-color: var(--accent); }
+
+    .search-box {
+      width: 100%;
+      margin-top: 12px;
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .search-box:focus { outline: none; border-color: var(--accent); }
+
+    .phrase-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: border-color 0.16s ease;
+    }
+
+    .card:hover { border-color: #424a5e; }
+    .card.playing { border-color: var(--accent); background: #1e212a; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .cat-tag {
+      font-size: 0.74rem;
+      color: var(--muted);
+      background: var(--surface-2);
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
+    .kr-main { font-size: 1.2rem; font-weight: 700; color: #ffffff; }
+
+    .speak-btn {
+      flex-shrink: 0;
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 7px;
+      padding: 5px 11px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .speak-btn:hover { background: var(--accent); color: #111317; }
+
+    .phonetics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+    }
+
+    .pron { color: var(--pron); font-weight: 600; }
+    .rom { color: var(--rom); }
+
+    .zh-trans {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      font-size: 0.88rem;
+      color: #d1d5db;
+    }
+
+    .meta-row strong.label-g { color: var(--grammar); }
+    .meta-row strong.label-v { color: var(--accent); }
+
+    .grammar-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-top: 22px;
+    }
+
+    .grammar-box h2 {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .grammar-item {
+      background: var(--surface-2);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .grammar-item:last-child { margin-bottom: 0; }
+    .grammar-item h3 { font-size: 0.98rem; color: #ffffff; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="page-header">
+      <div class="badge">KOREAN PHRASES & PRONUNCIATION</div>
+      <h1>韓文實用短句、連音發音與文法筆記</h1>
+      <p class="subtitle">點擊右上角「🔊 聽發音」可朗讀韓文（ko-KR），藍色為實際連音讀法，綠色為英文羅馬拼音。</p>
+
+      <div class="controls">
+        <button class="filter-btn active" onclick="filterCat('all', this)">全部短句</button>
+        <button class="filter-btn" onclick="filterCat('問候寒暄', this)">問候寒暄</button>
+        <button class="filter-btn" onclick="filterCat('飲食評價', this)">飲食評價</button>
+        <button class="filter-btn" onclick="filterCat('生活對話', this)">生活對話</button>
+        <button class="filter-btn" onclick="filterCat('語氣反問', this)">語氣與反問</button>
+      </div>
+      <input type="text" id="searchInput" class="search-box" placeholder="搜尋韓文、中文翻譯或文法關鍵字..." oninput="renderList()" />
+    </header>
+
+    <div id="phraseContainer" class="phrase-list"></div>
+
+    <section class="grammar-box">
+      <h2>📌 特別收錄：關鍵文法與語氣對比專欄</h2>
+      <div class="grammar-item">
+        <h3>1. 動詞過去定語形 + -(으)ㄴ 다음에（在……之後）</h3>
+        <p>由 <strong>다음</strong>（下一個、之後）加上時間助詞 <strong>에</strong> 組成。動詞接 <strong>-(으)ㄴ 다음에</strong> 表示「做完某個動作之後」，例如：밥을 먹은 다음에（吃完飯之後）。</p>
+      </div>
+      <div class="grammar-item">
+        <h3>2. 「진짜 할 거야?」vs.「진짜 하겠다고?」語氣差異</h3>
+        <p><strong>진짜 할 거야?</strong>（你真的要做嗎？）：單純詢問對方未來的計畫或意願。<br>
+        <strong>진짜 하겠다고?</strong>（你剛才竟然說你要做？！）：句尾 <strong>-겠다고?</strong> 帶有「複述對方剛說的宣言＋難以置信」的戲劇性反問語氣。</p>
+      </div>
+      <div class="grammar-item">
+        <h3>3. 敬語「잠시만요」與半語「잠시만 / 잠깐만」</h3>
+        <p><strong>잠시만요</strong>（請稍等一下）去掉字尾 <strong>요</strong> 變成 <strong>잠시만</strong> 或更口語的 <strong>잠깐만</strong>，用於朋友、晚輩之間的半語場合。</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const phrases = [
+      {
+        cat: "問候寒暄",
+        kr: "반갑습니다",
+        pron: "[반갑씀니다]",
+        rom: "ban-gap-seum-ni-da",
+        zh: "很高興見到您。",
+        vocab: "반갑다（高興、欣喜）",
+        grammar: "正式格式體終結詞尾 -습니다；ㅂ 遇到 ㅅ 產生緊音化，發音為 [씀]。"
+      },
+      {
+        cat: "問候寒暄",
+        kr: "요즘 바빠요?",
+        pron: "[요즘 바빠요?]",
+        rom: "yo-jeum ba-ppa-yo?",
+        zh: "最近忙嗎？",
+        vocab: "요즘（最近）、바쁘다（忙碌）",
+        grammar: "바쁘다 遇到 -아요 時，母音 ㅡ 脫落變成 바빠요。"
+      },
+      {
+        cat: "問候寒暄",
+        kr: "요즘 뭐 하고 지내요?",
+        pron: "[요즘 뭐 하고 지내요?]",
+        rom: "yo-jeum mwo ha-go ji-nae-yo?",
+        zh: "最近都在忙些什麼？／過得如何？",
+        vocab: "뭐（什麼，무엇 的縮寫）、지내다（度過、生活）",
+        grammar: "動詞 + -고 지내다：表示「過著……的生活」。"
+      },
+      {
+        cat: "問候寒暄",
+        kr: "그동안 어떻게 지냈어요?",
+        pron: "[그동안 어떠케 지내써요?]",
+        rom: "geu-dong-an eo-tteo-ke ji-nae-sseo-yo?",
+        zh: "這段時間（這一年來）你過得怎麼樣？",
+        vocab: "그동안（這段期間）、어떻게（如何、怎麼樣）",
+        grammar: "어떻게 中的收尾音 ㅎ 遇到 ㄱ 產生送氣音化，讀作 [어떠케]。"
+      },
+      {
+        cat: "問候寒暄",
+        kr: "잘 지냈어요?",
+        pron: "[잘 지내써요?]",
+        rom: "jal ji-nae-sseo-yo?",
+        zh: "你過得好嗎？",
+        vocab: "잘（好好地）、지내다（度過）",
+        grammar: "過去式 -았/었어요 用於詢問對方從過去到現在的近況。"
+      },
+      {
+        cat: "問候寒暄",
+        kr: "오늘 어때요? / 요즘 어때요?",
+        pron: "[오늘 어떠요? / 요즘 어떠요?]",
+        rom: "o-neul eo-ttae-yo? / yo-jeum eo-ttae-yo?",
+        zh: "今天怎麼樣？／最近怎麼樣？",
+        vocab: "오늘（今天）、어떻다（怎麼樣）",
+        grammar: "어떻다 為 ㅎ 不規則變化，接 -아요 時變為 어때요。"
+      },
+      {
+        cat: "問候寒暄",
+        kr: "밥 먹었어요?",
+        pron: "[밤 머거써요?]",
+        rom: "bam meo-geo-sseo-yo?",
+        zh: "吃飯了嗎？（韓國人日常打招呼用語）",
+        vocab: "밥（飯）、먹다（吃）",
+        grammar: "밥 的收尾音 ㅂ 受後方 ㅁ 影響發生鼻音化，連讀常聽起來像 [밤 머거써요]。"
+      },
+      {
+        cat: "飲食評價",
+        kr: "매운 음식을 먹지 못해요.",
+        pron: "[매운 음시글 먹찌 모태요]",
+        rom: "mae-un eum-si-geul meok-jji mo-tae-yo",
+        zh: "我不能吃辣的食物（沒辦法吃）。",
+        vocab: "맵다（辣的）、음식（食物）",
+        grammar: "動詞 + -지 못하다（不能、沒辦法）；못해요 中 ㅅ 連音並與 ㅎ 結合送氣化為 [모태요]。"
+      },
+      {
+        cat: "飲食評價",
+        kr: "맵지 않아요? / 저는 매운 거 안 먹어요.",
+        pron: "[맵찌 아나요? / 저는 매운 거 안 머거요]",
+        rom: "maep-jji a-na-yo? / jeo-neun mae-un geo an meo-geo-yo",
+        zh: "不會辣嗎？／我不吃辣的東西。",
+        vocab: "맵다（辣）、거（東西，것 的口語）",
+        grammar: "-지 않다 與 안 + 動詞 皆為否定形；않아요 中的 ㅎ 遇到母音不發音，讀作 [아나요]。"
+      },
+      {
+        cat: "飲食評價",
+        kr: "김치를 먹은 적이 있어요?",
+        pron: "[김치를 머근 저기 이써요?]",
+        rom: "gim-chi-reul meo-geun jeo-gi i-sseo-yo?",
+        zh: "你吃過泡菜嗎？",
+        vocab: "김치（泡菜）、적（經驗、時候）",
+        grammar: "動詞 + -(으)ㄴ 적이 있다：表示「曾經有過……的經驗」。"
+      },
+      {
+        cat: "飲食評價",
+        kr: "맛이 어때요?",
+        pron: "[마시 어떠요?]",
+        rom: "ma-si eo-ttae-yo?",
+        zh: "味道怎麼樣？",
+        vocab: "맛（味道）、이（主格助詞）",
+        grammar: "맛 的收尾音 ㅅ 連音到後方母音 이，讀作 [마시]。"
+      },
+      {
+        cat: "飲食評價",
+        kr: "맛있다 / 멋있다",
+        pron: "[마싣따 / 머싣따]",
+        rom: "ma-sit-tta / meo-sit-tta",
+        zh: "好吃、美味 ／ 帥氣、有型",
+        vocab: "맛（味道）、멋（風度、帥氣）、있다（有）",
+        grammar: "標準發音允許連音為 [마싣따 / 머싣따]，口語中也常讀作 [마딛따 / 머딛따]。"
+      },
+      {
+        cat: "飲食評價",
+        kr: "맛없다 / 멋없다",
+        pron: "[마덥따 / 머덥따]",
+        rom: "ma-deop-tta / meo-deop-tta",
+        zh: "難吃、難喝 ／ 沒品味、無趣",
+        vocab: "없다（沒有）",
+        grammar: "注意！因為 없다 是實質語素，ㅅ 先變代表音 ㄷ 再連音，必須讀作 [마덥따 / 머덥따]（不可讀成 마섭따）。"
+      },
+      {
+        cat: "飲食評價",
+        kr: "아이스크림은 좋아하지만 케이크는 안 좋아해요.",
+        pron: "[아이스크리믄 조아하지만 케이크는 안 조아해요]",
+        rom: "a-i-seu-keu-ri-meun jo-a-ha-ji-man ke-i-keu-neun an jo-a-hae-yo",
+        zh: "我喜歡冰淇淋，但不喜歡蛋糕。",
+        vocab: "아이스크림（冰淇淋）、케이크（蛋糕）、좋아하다（喜歡）",
+        grammar: "-지만（雖然……但是……）用於連接前後對比的事實；은/는 表對比主題。"
+      },
+      {
+        cat: "飲食評價",
+        kr: "이거 먹을래? / 아니, 싫어!",
+        pron: "[이거 머글래? / 아니, 시러!]",
+        rom: "i-geo meo-geul-lae? / a-ni, si-reo!",
+        zh: "要吃這個嗎？／ 不，不要！",
+        vocab: "이거（這個）、싫다（討厭、不要）",
+        grammar: "-(으)ㄹ래? 用於親近關係間詢問意願；싫어 中的 ㅎ 不發音，讀作 [시러]。"
+      },
+      {
+        cat: "生活對話",
+        kr: "걱정하지 마세요.",
+        pron: "[걱쩡하지 마세요]",
+        rom: "geok-jjeong-ha-ji ma-se-yo",
+        zh: "請不要擔心。",
+        vocab: "걱정하다（擔心）",
+        grammar: "動詞 + -지 마세요：表示「請不要做……」。ㄱ 後方的 ㅈ 緊音化為 [쩡]。"
+      },
+      {
+        cat: "生活對話",
+        kr: "죄송합니다, 화장실 어디예요?",
+        pron: "[죄송함니다, 화장실 어디예요?]",
+        rom: "joe-song-ham-ni-da, hwa-jang-sil eo-di-ye-yo?",
+        zh: "不好意思，請問洗手間在哪裡？",
+        vocab: "죄송합니다（抱歉、不好意思）、화장실（洗手間）、어디（哪裡）",
+        grammar: "名詞 + -예요（沒有收尾音時使用）用來詢問地點或身分。"
+      },
+      {
+        cat: "生活對話",
+        kr: "한국에 간 적이 있어요?",
+        pron: "[한구게 간 저기 이써요?]",
+        rom: "han-gu-ge gan jeo-gi i-sseo-yo?",
+        zh: "你去過韓國嗎？",
+        vocab: "한국（韓國）、가다（去）",
+        grammar: "가다 + -ㄴ 적이 있어요?（去過嗎？）；한국에 連音讀作 [한구게]。"
+      },
+      {
+        cat: "生活對話",
+        kr: "우리 내일 만나요",
+        pron: "[우리 내일 만나요]",
+        rom: "u-ri nae-il man-na-yo",
+        zh: "我們明天見吧。",
+        vocab: "우리（我們）、내일（明天）、만나다（見面）",
+        grammar: "陳述語尾 -아요/어요 搭配時間副詞 내일 可表達未來的邀約或約定。"
+      },
+      {
+        cat: "生活對話",
+        kr: "어젯밤에 선생님이랑 집에서 잤어요.",
+        pron: "[어젣빠메 선생니미랑 지베서 자써요]",
+        rom: "eo-jet-ppa-me seon-saeng-ni-mi-rang ji-be-seo ja-sseo-yo",
+        zh: "昨晚和老師一起在家裡睡覺（過夜）了。",
+        vocab: "어젯밤（昨晚）、선생님（老師）、집（家）、자다（睡覺）",
+        grammar: "名詞 + -(이)랑（和……一起，口語）；-에서（在某地點進行動作）。"
+      },
+      {
+        cat: "生活對話",
+        kr: "지금 시작해요 / 준비됐어요.",
+        pron: "[지금 시자캐요 / 준비돼써요]",
+        rom: "ji-geum si-ja-kae-yo / jun-bi-dwae-sseo-yo",
+        zh: "現在開始吧。／ 準備好了。",
+        vocab: "지금（現在）、시작하다（開始）、준비되다（準備好）",
+        grammar: "시작하다 的 ㄱ 與 ㅎ 合併送氣化為 [시자캐요]。"
+      },
+      {
+        cat: "生活對話",
+        kr: "이름이 뭐예요? / 가격이 얼마예요?",
+        pron: "[이르미 뭐예요? / 가겨기 얼마예요?]",
+        rom: "i-reu-mi mwo-ye-yo? / ga-gyeo-gi eol-ma-ye-yo?",
+        zh: "你叫什麼名字？／ 價格是多少錢？",
+        vocab: "이름（名字）、가격（價格）、얼마（多少）",
+        grammar: "主格助詞 이 接在有收尾音的名詞後，連音為 [이르미]、[가겨기]。"
+      },
+      {
+        cat: "生活對話",
+        kr: "좋아요! / 괜찮아요. / 그저 그래요.",
+        pron: "[조아요! / 괜차나요 / 그저 그래요]",
+        rom: "jo-a-yo! / gwaen-cha-na-yo / geu-jeo geu-rae-yo",
+        zh: "很好！／ 還不錯、沒關係 ／ 就那樣吧（普通）。",
+        vocab: "좋다（好）、괜찮다（沒關係、不錯）、그저 그렇다（普普通通）",
+        grammar: "좋아요 與 괜찮아요 的收尾音 ㅎ 在母音前不發音。"
+      },
+      {
+        cat: "生活對話",
+        kr: "저는 됐어요.",
+        pron: "[저는 돼써요]",
+        rom: "jeo-neun dwae-sseo-yo",
+        zh: "我不用了／我已經夠了（禮貌婉拒）。",
+        vocab: "되다（可以、足夠）",
+        grammar: "在餐廳加點或別人要幫忙時，用來委婉表示「我沒關係、不需要了」。"
+      },
+      {
+        cat: "生活對話",
+        kr: "사랑하는 사람이 있어요",
+        pron: "[사랑하는 사라미 이써요]",
+        rom: "sa-rang-ha-neun sa-ra-mi i-sseo-yo",
+        zh: "我有喜歡（愛）的人。",
+        vocab: "사랑하다（愛）、사람（人）",
+        grammar: "動詞 + -는（現在式定語形），用來修飾後方的名詞 사람。"
+      },
+      {
+        cat: "生活對話",
+        kr: "공원에 산책하러 가요.",
+        pron: "[공워네 산채카러 가요]",
+        rom: "gong-wo-ne san-chae-ka-reo ga-yo",
+        zh: "去公園散步。",
+        vocab: "공원（公園）、산책하다（散步）",
+        grammar: "動詞 + -(으)러 가다：表示移動去某處的目的（為了……而去）。"
+      },
+      {
+        cat: "生活對話",
+        kr: "잠시만요 / 잠시만 / 잠깐만",
+        pron: "[잠시만뇨 / 잠시만 / 잠깐만]",
+        rom: "jam-si-man-yo / jam-si-man / jam-kkan-man",
+        zh: "請稍等一下（敬語）／ 等一下（半語）",
+        vocab: "잠시（暫時）、잠깐（一會兒）、-만（只、僅）",
+        grammar: "去掉敬語字尾 요 即成為對朋友或晚輩使用的半語。"
+      },
+      {
+        cat: "生活對話",
+        kr: "부탁해",
+        pron: "[부타캐]",
+        rom: "bu-ta-kae",
+        zh: "拜託你了／麻煩你了／交給你囉（半語）",
+        vocab: "부탁하다（拜託、委託）",
+        grammar: "ㄱ 遇 ㅎ 送氣化讀作 [부타캐]；敬語說法為 부탁해요 或 부탁드립니다。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "너무 심해요! / 너무 심하지 않아요?",
+        pron: "[너무 심해요! / 너무 심하지 아나요?]",
+        rom: "neo-mu sim-hae-yo! / neo-mu sim-ha-ji a-na-yo?",
+        zh: "太過分了！／ 不覺得太過分了嗎？",
+        vocab: "너무（太、非常）、심하다（過分、嚴重）",
+        grammar: "-지 않아요? 用於反問對方「難道不是……嗎？」，尋求認同。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "왜 그래? / 뭐 해? / 뭐 하는 거야? / 뭐 하냐",
+        pron: "[왜 그래? / 뭐 해? / 뭐 하는 거야? / 뭐 하냐]",
+        rom: "wae geu-rae? / mwo hae? / mwo ha-neun geo-ya? / mwo ha-nya",
+        zh: "你幹嘛那樣（怎麼了）？／ 在做什麼？／ 你在幹嘛啊？（較粗魯）",
+        vocab: "왜（為什麼）、그렇다（那樣）",
+        grammar: "뭐 하냐 使用字尾 -냐，語氣較直接強硬，通常只對非常熟的朋友或帶不耐煩時使用。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "장난이에요. / 농담이야, 농담!",
+        pron: "[장나니에요 / 농다미야, 농담!]",
+        rom: "jang-na-ni-e-yo / nong-da-mi-ya, nong-dam!",
+        zh: "開玩笑的（敬語）。／ 開玩笑的啦，玩笑！（半語）",
+        vocab: "장난（玩笑、惡作劇）、농담（笑話、玩笑）",
+        grammar: "名詞 + -이에요（敬語）vs. 名詞 + -이야（半語）。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "진짜 모르겠어",
+        pron: "[진짜 모르게써]",
+        rom: "jin-jja mo-reu-ge-sseo",
+        zh: "我真的不知道／真搞不懂。",
+        vocab: "진짜（真的）、모르다（不知道）",
+        grammar: "-겠- 在第一人稱陳述句中常表示推測或委婉語氣「看來是不知道」。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "협박하지 마! / 이거 협박이에요? / 협박당했어요.",
+        pron: "[협빠카지 마! / 이거 협빠기에요? / 협빡땅해써요]",
+        rom: "hyeop-ppa-ka-ji ma! / i-geo hyeop-ppa-gi-e-yo? / hyeop-ppak-ttang-hae-sseo-yo",
+        zh: "別威脅我！／ 這是在威脅我嗎？／ 我被威脅了。",
+        vocab: "협박（威脅、恐嚇）、-당하다（遭受、被……）",
+        grammar: "名詞 + -당하다 構成被動意義（遭受某種負面行為）。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "잘못했어요",
+        pron: "[잘모태써요]",
+        rom: "jal-mo-tae-sseo-yo",
+        zh: "我錯了／對不起。",
+        vocab: "잘못하다（做錯）",
+        grammar: "ㅅ 與 ㅎ 結合送氣化，讀作 [잘모태써요]。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "할 말 있잖아? / 계속할까?",
+        pron: "[할 말 믿짜나? / 계소칼까?]",
+        rom: "hal mal it-jja-na? / gye-so-kal-kka?",
+        zh: "你有話要說吧？／ 要繼續嗎？",
+        vocab: "할 말（要說的話）、계속하다（繼續）",
+        grammar: "-잖아(요) 表示「不是……嘛」（提醒對方已知的事）；-(으)ㄹ까? 用於徵詢意見。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "말하지 마 / 비밀이야",
+        pron: "[말하지 마 / 비미리야]",
+        rom: "mal-ha-ji ma / bi-mi-ri-ya",
+        zh: "別說出去（半語）／ 是秘密喔（半語）",
+        vocab: "말하다（說）、비밀（秘密）",
+        grammar: "-지 마 是 -지 마세요 的半語禁止形。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "무슨 말이야? / 뭔 소리야?",
+        pron: "[무슨 마리야? / 뭔 소리야?]",
+        rom: "mu-seun ma-ri-ya? / mwon so-ri-ya?",
+        zh: "什麼意思啊？／ 你在胡說什麼啊？（較口語激動）",
+        vocab: "무슨（什麼樣的）、말（話）、소리（聲音、話語）",
+        grammar: "뭔 소리야 為 무슨 소리야 的口語縮略，語氣較衝，帶驚訝或質疑。"
+      },
+      {
+        cat: "語氣反問",
+        kr: "진짜 그만두겠다고? / 진짜 하겠다고?",
+        pron: "[진짜 그만두겓따고? / 진짜 하겓따고?]",
+        rom: "jin-jja geu-man-du-get-tta-go? / jin-jja ha-get-tta-go?",
+        zh: "你剛才說你真的要辭職（放棄）嗎？！／ 你竟然說你真的要做？！",
+        vocab: "그만두다（停止、辭職、放棄）",
+        grammar: "間接引語縮略形 -겠다고?，用於複述對方剛說的計畫並表達難以置信。"
+      }
+    ];
+
+    let currentCat = "all";
+
+    function filterCat(cat, btn) {
+      currentCat = cat;
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderList();
+    }
+
+    function speakText(text, cardEl) {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      document.querySelectorAll(".card.playing").forEach(c => c.classList.remove("playing"));
+
+      const cleanText = text.replace(/\//g, " , ");
+      const utter = new SpeechSynthesisUtterance(cleanText);
+      utter.lang = "ko-KR";
+      utter.rate = 0.92;
+
+      if (cardEl) cardEl.classList.add("playing");
+      utter.onend = () => cardEl && cardEl.classList.remove("playing");
+      utter.onerror = () => cardEl && cardEl.classList.remove("playing");
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    function renderList() {
+      const kw = document.getElementById("searchInput").value.trim().toLowerCase();
+      const container = document.getElementById("phraseContainer");
+      container.innerHTML = "";
+
+      const filtered = phrases.filter(item => {
+        const matchCat = currentCat === "all" || item.cat === currentCat;
+        const matchKw = !kw ||
+          item.kr.toLowerCase().includes(kw) ||
+          item.zh.toLowerCase().includes(kw) ||
+          item.rom.toLowerCase().includes(kw) ||
+          item.vocab.toLowerCase().includes(kw) ||
+          item.grammar.toLowerCase().includes(kw);
+        return matchCat && matchKw;
+      });
+
+      filtered.forEach((item, idx) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-top">
+            <div>
+              <span class="cat-tag">${item.cat} · #${idx + 1}</span>
+              <div class="kr-main">${item.kr}</div>
+            </div>
+            <button type="button" class="speak-btn">🔊 聽發音</button>
+          </div>
+          <div class="phonetics">
+            <span class="pron">連音：${item.pron}</span>
+            <span class="rom">拼音：${item.rom}</span>
+          </div>
+          <div class="zh-trans">${item.zh}</div>
+          <div class="meta-grid">
+            <div class="meta-row"><strong class="label-v">重要單字：</strong>${item.vocab}</div>
+            <div class="meta-row"><strong class="label-g">文法解說：</strong>${item.grammar}</div>
+          </div>
+        `;
+        card.querySelector(".speak-btn").onclick = () => speakText(item.kr, card);
+        container.appendChild(card);
+      });
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
