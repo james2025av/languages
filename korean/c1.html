@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>韓語機場實戰會話練習 | Airport Korean Conversation Practice</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --primary-dark: #1d4ed8;
+      --accent: #0ea5e9;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --staff-bg: #f1f5f9;
+      --you-bg: #eff6ff;
+      --phonetic: #0369a1;
+      --success: #16a34a;
+      --error: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding-bottom: 4rem;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: white;
+      padding: 2rem 1.25rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .container {
+      max-width: 880px;
+      margin: 1.75rem auto;
+      padding: 0 1rem;
+    }
+
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .tab-btn span {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      margin-top: 0.2rem;
+    }
+
+    .tab-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .section-card {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      display: none;
+    }
+
+    .section-card.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 2px solid var(--bg);
+    }
+
+    .section-title h2 {
+      font-size: 1.35rem;
+      color: var(--text);
+    }
+
+    .section-title p {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .play-controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .dialogue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .line-card {
+      padding: 1rem 1.15rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      position: relative;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .line-card.speaking {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .line-card.staff {
+      background: var(--staff-bg);
+      border-left: 4px solid #64748b;
+    }
+
+    .line-card.you {
+      background: var(--you-bg);
+      border-left: 4px solid var(--primary);
+    }
+
+    .line-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
+    }
+
+    .speaker-tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .staff .speaker-tag {
+      background: #cbd5e1;
+      color: #1e293b;
+    }
+
+    .you .speaker-tag {
+      background: #bfdbfe;
+      color: #1e3a8a;
+    }
+
+    .audio-btn {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--primary-dark);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .audio-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .korean-text {
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+
+    .phonetic-box {
+      font-size: 0.92rem;
+      color: var(--phonetic);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+
+    .romanization {
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 0.85rem;
+      margin-left: 0.4rem;
+    }
+
+    .chinese-text {
+      font-size: 0.96rem;
+      color: #334155;
+      padding-top: 0.25rem;
+      border-top: 1px dashed rgba(148, 163, 184, 0.35);
+    }
+
+    .hide-phonetic .phonetic-box {
+      display: none;
+    }
+
+    .hide-chinese .chinese-text {
+      display: none;
+    }
+
+    h3.sub-heading {
+      font-size: 1.12rem;
+      color: var(--primary-dark);
+      margin: 1.75rem 0 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .vocab-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.92rem;
+    }
+
+    .vocab-table th, .vocab-table td {
+      padding: 0.7rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .vocab-table th {
+      background: var(--bg);
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .vocab-kr {
+      font-weight: 700;
+      font-size: 1.02rem;
+      color: var(--text);
+    }
+
+    .vocab-ph {
+      color: var(--phonetic);
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .notes-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      border-radius: 12px;
+      padding: 1.15rem 1.25rem;
+    }
+
+    .notes-box ul {
+      padding-left: 1.2rem;
+    }
+
+    .notes-box li {
+      margin-bottom: 0.65rem;
+      font-size: 0.93rem;
+    }
+
+    .notes-box li:last-child {
+      margin-bottom: 0;
+    }
+
+    .quiz-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .quiz-item {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .quiz-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+
+    .quiz-opt {
+      padding: 0.6rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.9rem;
+      transition: all 0.15s;
+    }
+
+    .quiz-opt:hover {
+      border-color: var(--primary);
+    }
+
+    .quiz-opt.correct {
+      background: #dcfce7;
+      border-color: var(--success);
+      color: #14532d;
+      font-weight: 700;
+    }
+
+    .quiz-opt.wrong {
+      background: #fee2e2;
+      border-color: var(--error);
+      color: #7f1d1d;
+    }
+
+    @media (max-width: 600px) {
+      .nav-tabs {
+        grid-template-columns: 1fr;
+      }
+      header h1 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>✈️ 韓語機場實戰會話練習</h1>
+  <p>專注實際連音發音 [연음화]、逐句繁體中文對照、核心單字與音變規則解析</p>
+</header>
+
+<div class="toolbar">
+  <button class="btn active" id="togglePhonetic" onclick="toggleLayer('phonetic')">👁️ 顯示連音/拼音</button>
+  <button class="btn active" id="toggleChinese" onclick="toggleLayer('chinese')">🀄 顯示中文翻譯</button>
+  <button class="btn" id="speedBtn" onclick="toggleSpeed()">🐢 語速：正常 (1.0x)</button>
+</div>
+
+<div class="container" id="mainContainer">
+  <!-- Section Navigation -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab(0)">
+      1. 櫃檯報到
+      <span>Check-in Counter (체크인)</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab(1)">
+      2. 安全檢查
+      <span>Security Control (보안 검색)</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab(2)">
+      3. 證照與簽證查驗
+      <span>Immigration Booth (출입국 심사)</span>
+    </button>
+  </div>
+
+  <!-- Dynamic Section Content -->
+  <div id="sectionsMount"></div>
+
+  <!-- Mini Listening Quiz -->
+  <div class="quiz-section">
+    <h3 class="sub-heading" style="margin-top:0;">🎧 機場聽力小測驗（點擊喇叭聽韓文，選出正確意思）</h3>
+    <div id="quizMount"></div>
+  </div>
+</div>
+
+<script>
+  const sectionsData = [
+    {
+      id: "checkin",
+      title: "1. 機場櫃檯報到 (Check-in at the Counter)",
+      subtitle: "체크인 카운터 — 托運行李、確認座位與登機門",
+      dialogue: [
+        {
+          role: "staff",
+          speaker: "地勤人員 (직원)",
+          kr: "안녕하세요. 여권하고 항공권 보여 주세요.",
+          ph: "[안녕하세요. 여꿔나고 항공권 보여 주세요.]",
+          ro: "an-nyeong-ha-se-yo. yeo-kkwo-na-go hang-gong-gwon bo-yeo ju-se-yo.",
+          zh: "您好。請出示您的護照和機票。"
+        },
+        {
+          role: "you",
+          speaker: "旅客 (나)",
+          kr: "네, 여기 있습니다. 창가 자리로 주세요.",
+          ph: "[네, 여기 이씀니다. 창가 자리로 주세요.]",
+          ro: "ne, yeo-gi i-sseum-ni-da. chang-ga ja-ri-ro ju-se-yo.",
+          zh: "好的，在這裡。請給我靠窗的座位。"
+        },
+        {
+          role: "staff",
+          speaker: "地勤人員 (직원)",
+          kr: "부치실 짐이 있으세요?",
+          ph: "[부치실 지미 이쓰세요?]",
+          ro: "bu-chi-sil ji-mi i-sseu-se-yo?",
+          zh: "請問有要托運的行李嗎？"
+        },
+        {
+          role: "you",
+          speaker: "旅客 (나)",
+          kr: "네, 이 캐리어 하나만 부칠게요.",
+          ph: "[네, 이 캐리어 하나만 부칠께요.]",
+          ro: "ne, i kae-ri-eo ha-na-man bu-chil-kke-yo.",
+          zh: "是的，我只托運這一個行李箱。"
+        },
+        {
+          role: "staff",
+          speaker: "地勤人員 (직원)",
+          kr: "보조 배터리는 짐에 넣지 마세요. 탑승구는 15번 게이트입니다.",
+          ph: "[보조 배터리는 지메 너치 마세요. 탑씅구는 시보번 게이트임니다.]",
+          ro: "bo-jo bae-teo-ri-neun ji-me neo-chi ma-se-yo. tap-sseung-gu-neun si-bo-beon ge-i-teu-im-ni-da.",
+          zh: "行動電源請勿放進托運行李中。登機門是 15 號登機門。"
+        }
+      ],
+      vocab: [
+        { kr: "여권", ph: "[여꿘] yeo-kkwon", zh: "護照" },
+        { kr: "항공권 / 티켓", ph: "[항공권 / 티켓] hang-gong-gwon / ti-ket", zh: "機票" },
+        { kr: "창가 자리", ph: "[창가 자리] chang-ga ja-ri", zh: "靠窗座位（走道座位：복도 자리）" },
+        { kr: "짐을 부치다", ph: "[지믈 부치다] ji-meul bu-chi-da", zh: "托運行李" },
+        { kr: "보조 배터리", ph: "[보조 배터리] bo-jo bae-teo-ri", zh: "行動電源" },
+        { kr: "탑승구 (게이트)", ph: "[탑씅구] tap-sseung-gu", zh: "登機門（Gate）" }
+      ],
+      notes: [
+        "<strong>連音與 ㅎ 弱化：</strong>「여권하고（護照和）」在快速口語中，收尾音 <strong>ㄴ</strong> 遇到 <strong>하</strong> 時，<strong>ㅎ</strong> 音常弱化脫落，聽起來像 <strong>[여꿔나고]</strong>。",
+        "<strong>緊音化（경음화）：</strong>「있습니다（有）」的 <strong>ㅂ</strong> 遇到後面的 <strong>니</strong> 發生鼻音化讀作 <strong>[이씀니다]</strong>；而「부칠게요（我會托運）」的詞尾 <strong>-(으)ㄹ게요</strong> 永遠發緊音 <strong>[께요]</strong>。",
+        "<strong>激音化規則：</strong>「넣지 마세요（請勿放入）」中，<strong>넣</strong> 的收尾音 <strong>ㅎ</strong> 遇到後面的 <strong>지</strong>，兩者合併成送氣音 <strong>[치]</strong>，讀作 <strong>[너치 마세요]</strong>。"
+      ]
+    },
+    {
+      id: "security",
+      title: "2. 安全檢查 (In the Safety / Security Control)",
+      subtitle: "보안 검색대 — 隨身物品檢查、液體與電子產品規定",
+      dialogue: [
+        {
+          role: "staff",
+          speaker: "安檢人員 (보안 요원)",
+          kr: "가방에 노트북이나 액체류가 있나요?",
+          ph: "[가방에 노트부기나 액체류가 인나요?]",
+          ro: "ga-bang-e no-teu-bu-gi-na aek-che-ryu-ga in-na-yo?",
+          zh: "包包裡有筆記型電腦或液體類物品嗎？"
+        },
+        {
+          role: "you",
+          speaker: "旅客 (나)",
+          kr: "네, 노트북하고 물병이 있어요.",
+          ph: "[네, 노트부카고 물뼝이 이써요.]",
+          ro: "ne, no-teu-bu-ka-go mul-ppyeong-i i-sseo-yo.",
+          zh: "是的，有筆記型電腦和水瓶。"
+        },
+        {
+          role: "staff",
+          speaker: "安檢人員 (보안 요원)",
+          kr: "노트북은 꺼내서 바구니에 따로 담아 주세요.",
+          ph: "[노트부근 꺼내서 바구니에 따로 다마 주세요.]",
+          ro: "no-teu-bu-geun kkeo-nae-seo ba-gu-ni-e tta-ro da-ma ju-se-yo.",
+          zh: "請把筆記型電腦拿出來，另外放進置物籃裡。"
+        },
+        {
+          role: "staff",
+          speaker: "安檢人員 (보안 요원)",
+          kr: "물은 반입이 안 됩니다. 여기서 마시거나 버려 주세요.",
+          ph: "[무른 바니비 안 됨니다. 여기서 마시거나 버려 주세요.]",
+          ro: "mu-reun ba-ni-bi an doem-ni-da. yeo-gi-seo ma-si-geo-na beo-ryeo ju-se-yo.",
+          zh: "水不能帶進去。請在這裡喝完或丟掉。"
+        },
+        {
+          role: "you",
+          speaker: "旅客 (나)",
+          kr: "알겠습니다. 외투도 벗어야 하나요?",
+          ph: "[알게씀니다. 외투도 버서야 하나요?]",
+          ro: "al-ge-sseum-ni-da. oe-tu-do beo-seo-ya ha-na-yo?",
+          zh: "我知道了。外套也需要脫掉嗎？"
+        }
+      ],
+      vocab: [
+        { kr: "보안 검색대", ph: "[보안 검색때] bo-an geom-saek-ttae", zh: "安全檢查處" },
+        { kr: "노트북", ph: "[노트북] no-teu-buk", zh: "筆記型電腦（韓式英文）" },
+        { kr: "액체류", ph: "[액체류] aek-che-ryu", zh: "液體類" },
+        { kr: "바구니", ph: "[바구니] ba-gu-ni", zh: "籃子、置物籃" },
+        { kr: "반입이 안 되다", ph: "[바니비 안 되다] ba-ni-bi an doe-da", zh: "禁止攜入、不可帶入" },
+        { kr: "외투를 벗다", ph: "[외투를 벗따] oe-tu-reul beot-tta", zh: "脫外套" }
+      ],
+      notes: [
+        "<strong>激音化（ㄱ + ㅎ $\rightarrow$ ㅋ）：</strong>「노트북하고（筆電和）」中，<strong>북</strong> 的收尾音 <strong>ㄱ</strong> 遇到 <strong>하</strong> 的 <strong>ㅎ</strong>，合併讀作 <strong>[카]</strong>，整串念成 <strong>[노트부카고]</strong>。",
+        "<strong>鼻音化（있나요 $\rightarrow$ [인나요]）：</strong><strong>있</strong> 的收尾音（代表音 ㄷ）遇到後面的鼻音 <strong>나</strong>，會同化成 <strong>ㄴ</strong>，讀作 <strong>[인나요]</strong>。",
+        "<strong>實用句型「-거나（或者）」：</strong>「마시거나 버려 주세요（請喝掉<strong>或者</strong>丟掉）」，接在動詞詞幹後表示二選一。"
+      ]
+    },
+    {
+      id: "immigration",
+      title: "3. 證照與簽證查驗 (Booth to Check Visa / Immigration)",
+      subtitle: "출입국 심사대 — 入境目的、停留天數與住宿地點",
+      dialogue: [
+        {
+          role: "staff",
+          speaker: "審查官 (심사관)",
+          kr: "여권하고 입국신고서 주세요. 방문 목적이 무엇입니까?",
+          ph: "[여꿔나고 입꾹씬고서 주세요. 방문 목쩌기 무어심니까?]",
+          ro: "yeo-kkwo-na-go ip-kkuk-ssin-go-seo ju-se-yo. bang-mun mok-jjeo-gi mu-eo-sim-ni-kka?",
+          zh: "請給我護照和入境卡。請問您的訪問目的是什麼？"
+        },
+        {
+          role: "you",
+          speaker: "旅客 (나)",
+          kr: "관광하러 왔어요. 여행하러 왔습니다.",
+          ph: "[관광하러 와써요. 여행하러 와씀니다.]",
+          ro: "gwan-gwang-ha-reo wa-sseo-yo. yeo-haeng-ha-reo wa-sseum-ni-da.",
+          zh: "我是來觀光的。我是來旅遊的。"
+        },
+        {
+          role: "staff",
+          speaker: "審查官 (심사관)",
+          kr: "한국에 며칠 동안 머무를 예정입니까?",
+          ph: "[한구게 며칠 동안 머무를 예정임니까?]",
+          ro: "han-gu-ge myeo-chil dong-an meo-mu-reul ye-jeong-im-ni-kka?",
+          zh: "您預計在韓國停留幾天？"
+        },
+        {
+          role: "you",
+          speaker: "旅客 (나)",
+          kr: "5일 동안 있을 거예요. 명동 호텔에서 지낼 거예요.",
+          ph: "[오일 동안 이쓸 거예요. 명동 호테레서 지낼 거예요.]",
+          ro: "o-il dong-an i-sseul kkeo-ye-yo. myeong-dong ho-te-re-seo ji-nael kkeo-ye-yo.",
+          zh: "我會待 5 天。我會住在明洞的飯店。"
+        },
+        {
+          role: "staff",
+          speaker: "審查官 (심사관)",
+          kr: "양손 검지 손가락을 스캐너에 대 주세요. 카메라를 보세요.",
+          ph: "[양손 검지 손까라글 스캐너에 대 주세요. 카메라를 보세요.]",
+          ro: "yang-son geom-ji son-kka-ra-geul seu-kae-neo-e dae ju-se-yo. ka-me-ra-reul bo-se-yo.",
+          zh: "請將雙手食指放在掃描器上。請看鏡頭。"
+        }
+      ],
+      vocab: [
+        { kr: "입국신고서", ph: "[입꾹씬고서] ip-kkuk-ssin-go-seo", zh: "入境卡" },
+        { kr: "방문 목적", ph: "[방문 목쩍] bang-mun mok-jjeok", zh: "訪問目的" },
+        { kr: "관광 / 여행", ph: "[관광 / 여행] gwan-gwang / yeo-haeng", zh: "觀光 / 旅遊" },
+        { kr: "며칠 동안", ph: "[며칠 동안] myeo-chil dong-an", zh: "幾天期間" },
+        { kr: "검지 손가락", ph: "[검지 손까락] geom-ji son-kka-rak", zh: "食指" },
+        { kr: "대 주세요", ph: "[대 주세요] dae ju-se-yo", zh: "請貼上／放上" }
+      ],
+      notes: [
+        "<strong>文法連結（未來計畫 -(으)ㄹ 거예요）：</strong>旅客回答「<strong>있을 거예요</strong>（我會待……）」和「<strong>지낼 거예요</strong>（我會住在……）」都使用 <strong>-(으)ㄹ 거예요</strong>，且後面的 <strong>거예요</strong> 永遠讀作緊音 <strong>[꺼예요]</strong>。",
+        "<strong>正式疑問語尾「-(스)ㅂ니까?」：</strong>審查官使用較正式的格式體疑問句（如 <strong>무엇입니까?</strong>、<strong>예정입니까?</strong>），回答時用親切敬語 <strong>-어요/-아요</strong> 或正式敬語 <strong>-습니다</strong> 都可以。",
+        "<strong>連音提醒：</strong>「호텔에서（在飯店）」收尾音 <strong>ㄹ</strong> 連過去讀作 <strong>[호테레서]</strong>；「손가락을（手指）」收尾音 <strong>ㄱ</strong> 連過去讀作 <strong>[손까라글]</strong>。"
+      ]
+    }
+  ];
+
+  const quizData = [
+    {
+      kr: "부치실 짐이 있으세요?",
+      question: "1. 地勤人員問這句話時，是在確認什麼？",
+      options: [
+        "A. 是否有要托運的行李",
+        "B. 是否需要靠走道的座位",
+        "C. 登機門是否已經更改"
+      ],
+      answer: 0
+    },
+    {
+      kr: "노트북은 꺼내서 바구니에 따로 담아 주세요.",
+      question: "2. 安檢人員請你做什麼動作？",
+      options: [
+        "A. 把水瓶丟進垃圾桶",
+        "B. 把筆電拿出來另外放進置物籃",
+        "C. 把行動電源放進托運行李"
+      ],
+      answer: 1
+    },
+    {
+      kr: "5일 동안 있을 거예요.",
+      question: "3. 旅客回答這句話，代表他會在韓國待多久？",
+      options: [
+        "A. 2 週",
+        "B. 15 天",
+        "C. 5 天"
+      ],
+      answer: 2
+    }
+  ];
+
+  let currentRate = 1.0;
+  let currentTab = 0;
+
+  function renderSections() {
+    const mount = document.getElementById("sectionsMount");
+    mount.innerHTML = sectionsData.map((sec, idx) => `
+      <div class="section-card ${idx === currentTab ? 'active' : ''}" id="sec-${idx}">
+        <div class="section-header">
+          <div class="section-title">
+            <h2>${sec.title}</h2>
+            <p>${sec.subtitle}</p>
+          </div>
+          <div class="play-controls">
+            <button class="btn active" onclick="playAllDialogue(${idx})">▶️ 播放整段對話</button>
+            <button class="btn" onclick="stopSpeech()">⏹️ 停止</button>
+          </div>
+        </div>
+
+        <div class="dialogue-list">
+          ${sec.dialogue.map((line, lIdx) => `
+            <div class="line-card ${line.role}" id="line-${idx}-${lIdx}">
+              <div class="line-top">
+                <span class="speaker-tag">${line.speaker}</span>
+                <button class="audio-btn" onclick="speakKorean('${line.kr.replace(/'/g, "\\'")}', 'line-${idx}-${lIdx}')">🔊 聽發音</button>
+              </div>
+              <div class="korean-text">${line.kr}</div>
+              <div class="phonetic-box">${line.ph} <span class="romanization">(${line.ro})</span></div>
+              <div class="chinese-text">${line.zh}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <h3 class="sub-heading">📚 重要單字表 (Key Vocabulary)</h3>
+        <table class="vocab-table">
+          <thead>
+            <tr>
+              <th>韓文單字</th>
+              <th>實際發音與拼音</th>
+              <th>中文意思</th>
+              <th>發音</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sec.vocab.map(v => `
+              <tr>
+                <td class="vocab-kr">${v.kr}</td>
+                <td class="vocab-ph">${v.ph}</td>
+                <td>${v.zh}</td>
+                <td><button class="audio-btn" onclick="speakKorean('${v.kr.split('/')[0].trim()}')">🔊</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <h3 class="sub-heading">💡 連音發音與實用句型解析 (Notes & Explanations)</h3>
+        <div class="notes-box">
+          <ul>
+            ${sec.notes.map(n => `<li>${n}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderQuiz() {
+    const qMount = document.getElementById("quizMount");
+    qMount.innerHTML = quizData.map((q, qIdx) => `
+      <div class="quiz-item">
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          <strong>${q.question}</strong>
+          <button class="audio-btn" onclick="speakKorean('${q.kr}')">🔊 播放題目韓文</button>
+        </div>
+        <div class="quiz-options">
+          ${q.options.map((opt, oIdx) => `
+            <button class="quiz-opt" onclick="checkQuiz(this, ${qIdx}, ${oIdx})">${opt}</button>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function switchTab(idx) {
+    stopSpeech();
+    currentTab = idx;
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('.section-card').forEach((card, i) => {
+      card.classList.toggle('active', i === idx);
+    });
+  }
+
+  function toggleLayer(type) {
+    const container = document.getElementById("mainContainer");
+    if (type === 'phonetic') {
+      container.classList.toggle('hide-phonetic');
+      document.getElementById('togglePhonetic').classList.toggle('active');
+    } else if (type === 'chinese') {
+      container.classList.toggle('hide-chinese');
+      document.getElementById('toggleChinese').classList.toggle('active');
+    }
+  }
+
+  function toggleSpeed() {
+    const btn = document.getElementById('speedBtn');
+    if (currentRate === 1.0) {
+      currentRate = 0.78;
+      btn.textContent = "🐢 語速：慢速 (0.8x)";
+      btn.classList.add('active');
+    } else {
+      currentRate = 1.0;
+      btn.textContent = "🐢 語速：正常 (1.0x)";
+      btn.classList.remove('active');
+    }
+  }
+
+  function speakKorean(text, elementId = null) {
+    if (!('speechSynthesis' in window)) {
+      alert("您的瀏覽器不支援語音朗讀功能，建議使用 Chrome、Edge 或 Safari。");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    clearHighlights();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    utterance.rate = currentRate;
+
+    if (elementId) {
+      const el = document.getElementById(elementId);
+      if (el) el.classList.add('speaking');
+      utterance.onend = () => {
+        if (el) el.classList.remove('speaking');
+      };
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function playAllDialogue(secIdx) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    clearHighlights();
+
+    const lines = sectionsData[secIdx].dialogue;
+    let i = 0;
+
+    function nextLine() {
+      if (i >= lines.length) {
+        clearHighlights();
+        return;
+      }
+      clearHighlights();
+      const el = document.getElementById(`line-${secIdx}-${i}`);
+      if (el) {
+        el.classList.add('speaking');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      const utter = new SpeechSynthesisUtterance(lines[i].kr);
+      utter.lang = 'ko-KR';
+      utter.rate = currentRate;
+      utter.onend = () => {
+        i++;
+        nextLine();
+      };
+      window.speechSynthesis.speak(utter);
+    }
+
+    nextLine();
+  }
+
+  function stopSpeech() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    clearHighlights();
+  }
+
+  function clearHighlights() {
+    document.querySelectorAll('.line-card').forEach(c => c.classList.remove('speaking'));
+  }
+
+  function checkQuiz(btn, qIdx, oIdx) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.quiz-opt').forEach(b => {
+      b.classList.remove('correct', 'wrong');
+    });
+    if (oIdx === quizData[qIdx].answer) {
+      btn.classList.add('correct');
+    } else {
+      btn.classList.add('wrong');
+    }
+  }
+
+  renderSections();
+  renderQuiz();
+</script>
+
+</body>
+</html>
